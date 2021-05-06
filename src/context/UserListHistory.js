@@ -1,5 +1,4 @@
-import React, {useReducer,useState, createContext ,useEffect, useContext} from 'react';
-// import useSocket from 'use-socket.io-client';
+import React, {useReducer, createContext ,useEffect, useContext} from 'react';
 import { SocketContext } from './SocketProvider';
 
 
@@ -10,26 +9,22 @@ const reducer = (history, action) => {
 
   switch (action.type) {
     case "ADD-OFFLINE":
-      console.log('history',history)
-    let index = history.findIndex( x => x.visitor_id == action.payload.visitor_id)
-    console.log("index",index)
+    let index = history.findIndex( x => x.visitor_id === action.payload.visitor_id)
          if(~index)
          history[index] = action.payload
          else 
-         history.push(action.payload)
-       
+         history.push(action.payload)      
          return [...history] 
-      
-      
-      //var newArray = visits.filter( visitor => visitor.visitor_id !== action.payload.visitor_id);
-      
-      
-    // case "Compare":
-    //   console.log(action,visits)
-    
-    //   return visits.filter( visitor => visitor.visitor_id !== action.payload.visitorId)
-        // [...visits,action.payload]
-        //  visits.filter( visitor => visitor.visitor_id !== action.payload.visitorId)
+         case "REMOVE-ONLINE":
+          // console.log(action.payload,"actionss",history,"visotr")
+                    let index3 = history.findIndex( x => x.visitor_id === action.payload.visitor_id)
+                    // console.log(index3,"index")
+                         if(~index3)
+                        {
+                        history.splice(index3,1)}
+                        
+                         return [...history]
+                         
    
     case "START":
       return {
@@ -54,7 +49,7 @@ export const HistoryListing = (props) =>{
     //console.log('history outer effect',socket)
     useEffect(() => {
       
-      console.log("offline")
+     // console.log("offline")
       //console.log('history inner effect',socket)
         var obj = JSON.parse(localStorage.getItem('user'));
           //socket.emit('set-user-data', obj.data.agent_id);
@@ -74,14 +69,21 @@ export const HistoryListing = (props) =>{
                   var visitorAndAgentIdobj = { visitorId: visitor_id, agentId: agent_id };
                   socket.emit('get_visitor_id', visitorAndAgentIdobj, function (response) {
                   //socket.emit('get_visitor_id', visitor_id, function (response) {
-                
+               
                     if(stack[response.visitor_id] === "Offline")
+                  
                     {     
                       dispatch({
                         type: "ADD-OFFLINE",
                         payload: response
                       });
-                    }
+                    } else  {
+                      // console.log("online-remove")
+                        dispatch({
+                          type: "REMOVE-ONLINE",
+                          payload: response
+                        });
+                     }
                    
                   });
                 }
@@ -92,6 +94,7 @@ export const HistoryListing = (props) =>{
     //      socket && socket.removeAllListeners();
     //     //  socket && socket.close(); 
     //  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
        },[]);
       
     return(

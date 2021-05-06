@@ -1,61 +1,56 @@
-import React, { useState,useContext, useEffect,useRef } from 'react';
+import React, {useContext, useEffect,useRef } from 'react';
 import { MessageContext } from '../context/MessageContext';
 //  import { SocketContext } from '../context/SocketProvider';
 
 const MessageList = ({customer_ID,visits,socket,setMess,mess}) => {
 const [messages,Messagedispatch] = useContext(MessageContext);
 const messagesEndRef = useRef(null)
-const serverURL = "http://10.1.30.146:5001";
+const serverURL = "http://10.1.30.146:5002";
 
-  console.log(messages,"shhhhhhh")
+ console.log(messages,"messages12312312")
 
   var obj = JSON.parse(localStorage.getItem('user'));
 
   const scrollToBottom = () => {
-    console.log(visits,"visisisiis")
+ 
   if (customer_ID )   messagesEndRef.current.scrollIntoView({block:'start',behavior:"smooth"});
-  console.log("hey",customer_ID,'45')
+
   }
 
 
   useEffect(scrollToBottom, [messages]);
   useEffect(()=>{
-
-    Messagedispatch({
-      type: "set-to-empty",
-     payload : []
-    });
-    // socket && socket.removeAllListeners("chat-msg");
-    console.log(customer_ID,"bdasdasdasdadad")
-  
-    socket.emit('update-room',{ visitor_id : customer_ID , agent_id : obj.data.agent_id , agent : obj.data.agent_name});
+    // console.log(messages.filter(item => item.reproomId === '6040e23434a576148036046e'),"messageseffect")
+    // Messagedispatch({
+    //   type: "set-to-empty",
+    //  payload : []
+    // });
+    // console.log("pagal")
+    socket.emit('update-room',{ visitor_id : customer_ID , agent_id : obj.data.agent_id , agent : obj.data.agent_name, isVisitorList : false, page: 'MsgList'});
     setMess(true);
     return ()=>
     {
       setMess(false)
-      // socket.on("chat-msg")
+     
     }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   },[mess])
  
 return(
 <div>
 
-                         
-                         <div class="TicketComments">
- 
+                         <div className="TicketComments">
  <ul >
- 
- {/* {messages.sort((a, b) => a.repcreatedOn - b.repcreatedOn).reverse().map(item => ( */}
   {messages.sort((a,b) => new Date(b.repcreatedOn) < new Date(a.repcreatedOn) ? 1 : -1).map(item => (
     <>
 
       {(() => {
         var today;
         var time;
-        if (item.repmsgFrom === customer_ID.id) {
+        if (item.repmsgFrom === customer_ID.id ) {
          
          today = new Date(item.repcreatedOn);
-          // time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
+        
          time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
           function timeTo12HrFormat(time)
 {   // Take a time in 24 hour format and format it in 12 hour format
@@ -77,38 +72,28 @@ return(
     return formatted_time;
 }
           return (
-            <li class="OtherUser">
-            <div class="userImgAndChat">
-                <div class="userImg">
-                    <img src="https://uifaces.co/our-content/donated/gPZwCbdS.jpg" class="img-responsive" alt="-" />
+            <li className="OtherUser">
+            <div className="userImgAndChat">
+                <div className="userImg">
+                    <img src="assets/images/avatar.jpg" className="img-responsive" alt="-" />
                 </div>
            
-                <div class="userChat">
+                <div className="userChat">
                     <p> {item.repmsg}
-                    {(item.repfile !== "") ? <img src={ serverURL + "/uploads/" + item.repfile} /> : false }
+                    {(item.repfile !== "") ? <a href={serverURL + "/uploads/" + item.repfile} target = "_blank"  rel="noreferrer"><img alt="pic here " src={ serverURL + "/uploads/" + item.repfile} /></a>  : false }
                     </p>
                 </div>
          
                 
-                <div class="dateTime">{timeTo12HrFormat(time)}</div>
+                <div className="dateTime">{timeTo12HrFormat(time)}</div>
                 
             </div>
 
         </li>
-         
-            
-            //   <li  class="sent" key={item.msgId} >
-            //   <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-            //             <span class="timeStamp">{timeTo12HrFormat(time)}</span>
-            //   <p> 
-            //     {item.repmsg}
-                
-            //     {(item.repfile !== "") ? <img src={ serverURL + "/uploads/" + item.repfile} /> : false }
-            //   </p>
-            // </li>
+        
           )
-        } else if (item.repmsgFrom === obj.data.agent_id) {
-
+        } else if (item.repmsgFrom === obj.data.agent_id ) {
+          if(item.repmsgTo === customer_ID.id){
            today = new Date(item.repcreatedOn);
            time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
            
@@ -134,34 +119,26 @@ return(
           
           return (
             <li>
-            <div class="userImgAndChat">
-                <div class="userImg">
-                    <img src="https://uifaces.co/our-content/donated/gPZwCbdS.jpg" class="img-responsive" alt="-" />
+            <div className="userImgAndChat">
+                <div className="userImg">
+                    <img src="assets/images/agentavatar.jpg" className="img-responsive" alt="-" />
                 </div>
    
-                <div class="userChat">
+                <div className="userChat">
                     <p> {item.repmsg}
-                    {(item.repfile !== "") ? <img src={ serverURL + "/uploads/" + item.repfile} /> : false }
-                    </p>
+                    {(item.repfile !== "") ? <a href={serverURL + "/uploads/" + item.repfile} target = "_blank"  rel="noreferrer"><img alt="-"src={ serverURL + "/uploads/" + item.repfile} /></a> : false }
+                   </p>
                 </div>
     
-                <div class="dateTime">{timeTo12HrFormat(time)}</div>
+                <div className="dateTime">{timeTo12HrFormat(time)}</div>
                 
             </div>
     
         </li>
-          //   <li class="replies">
-          //   <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-          //             <span class="timeStamp">{timeTo12HrFormat(time)}</span>
-          //   <p> 
-          //       {item.repmsg}
-                
-          //       {(item.repfile !== "") ? <img src={ serverURL + "/uploads/" + item.repfile} /> : false }
-          //     </p>
-          // </li>
+        
           )
         }
-      
+      }
 
        
       })()}
@@ -177,8 +154,6 @@ return(
 </div >
 
 </div>
-
-
 
         )
     }

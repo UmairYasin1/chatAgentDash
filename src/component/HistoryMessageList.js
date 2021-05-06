@@ -1,60 +1,70 @@
-import React ,{useEffect, useState}from 'react';
-const HistoryMessageList = ({historyMessages,customer_ID,socket,setHistoryMessages,mess}) => {
+import React ,{useEffect,useContext }from 'react';
+// import { MessageContext } from '../context/MessageContext';
+import { HistoryMessageContext } from '../context/HistoryMessagesContext';
+const HistoryMessageList = ({customer_ID,socket}) => {
    
-  // console.log('message122:', historyMessages)
-  // console.log('custoomer', customer_ID)
-
-  const serverURL = "http://10.1.30.146:5001";
+  // const [messages,Messagedispatch] = useContext(MessageContext);
+  const  [histmessages, HistoryMsgdispatch] = useContext(HistoryMessageContext)
+  const serverURL = "http://10.1.30.146:5002";
   var obj = JSON.parse(localStorage.getItem('user'));
   let roomId = '';
-  const agent_id = "";
-  // console.log("how many times");
 
-  useEffect(() => {
-// console.log("how many times");
-var obj = JSON.parse(localStorage.getItem('user'));
-      socket.emit('update-room',{ visitor_id : customer_ID , agent_id : obj.data.agent_id , agent : obj.data.agent_name});
-      socket.on('update-room',function(room){
-        setHistoryMessages([])
-        const msgCount = 0;
-        roomId = room;
-        socket.emit('old-chats-init',{room:roomId,username:obj.data.agent_id ,msgCount:msgCount});
-        // console.log("2");
-      });
+// console.log(histmessages,"messages")
+useEffect(()=>{
+  socket.emit('update-room',{ visitor_id : customer_ID , agent_id : obj.data.agent_id , agent : obj.data.agent_name, isVisitorList : false, page: 'HistoryMsgList'});
+},[])
+//   useEffect(() => {
+//     // let roomId = '';
+// var obj = JSON.parse(localStorage.getItem('user'));
+  
+//       socket.on('update-room',function(room){
+//         // 
+//         const msgCount = 0;
+//         roomId = room;
+//         socket.emit('old-chats-init',{room:roomId,username:obj.data.agent_id ,msgCount:msgCount});
+//         // console.log("2");
+//       });
   
      
-      socket.on('old-chats',function(data){
-       console.log("data",data);
+//       socket.on('old-chats',function(data){
+//       //  console.log("data",data);
+//       // setHistoryMessages([])
         
-        
-        if(data.room === roomId){
-          setHistoryMessages([])
-        
-          if(data.result.length !== 0){
+//         if(data.room === roomId){
           
-            for (var i = 0;i < data.result.length;i++) {
+        
+//           if(data.result.length !== 0){
+          
+//             for (var i = 0;i < data.result.length;i++) {
   
-                  socket.emit('get_reply_msg', data.result[i].msgId   , function (response) {
+//                   socket.emit('get_reply_msg', data.result[i].msgId   , function (response) {
   
-                    setHistoryMessages( messages => [...messages, response] );
-                    // console.log('response',response)
+//                     Messagedispatch({
+//                       type: "GET_RESPONSE",
+//                       payload: response
+//                     });
+                
                     
-                })
+//                 })
   
-            }
-          }
+//             }
+//           }
          
     
-        }//end of outer if.
+//         }//end of outer if.
            
-      }); // end of listening old-chats event.
+//       }); // end of listening old-chats event.
       
   
-      return () => {
-        //socket && socket.removeAllListeners("update-room");
-        // socket && socket.close();
-      };
-    }, []);
+//       return () => {
+//         //socket && socket.removeAllListeners("update-room");
+//         // socket && socket.close();
+//         // socket && socket.removeAllListeners("update-room");
+//         // socket && socket.removeAllListeners("chat-msg");
+//         //  socket && socket.removeAllListeners( 'old-chats');
+//       };
+//       // eslint-disable-next-line react-hooks/exhaustive-deps
+//     }, []);
 
     
 
@@ -70,22 +80,22 @@ var obj = JSON.parse(localStorage.getItem('user'));
 
 
 
-          <div class="ChatHistoryBoxInner">
+          <div className="ChatHistoryBoxInner">
  <ul>
-   {/* {console.log(historyMessages,'customer id :',customer_ID.id,'agent id :',obj.data.agent_id) }  */}
-   {(historyMessages.length > 0)?
- historyMessages.sort((a,b) => new Date(b.repcreatedOn) < new Date(a.repcreatedOn) ? 1 : -1).map(item =>  (
+
+   {(histmessages.length > 0) ?
+ histmessages.sort((a,b) => new Date(b.repcreatedOn) < new Date(a.repcreatedOn) ? 1 : -1).map(item =>  (
           
              <>
 
              {(() => { 
                 var today;
                 var time;
-              // console.log("histro",historyMessages.length)
+              
               
                if (item.repmsgFrom === customer_ID.id ) {
                 today = new Date(item.repcreatedOn);
-                // time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
+              
                 time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
                 function timeTo12HrFormat(time)
       {   // Take a time in 24 hour format and format it in 12 hour format
@@ -108,20 +118,20 @@ var obj = JSON.parse(localStorage.getItem('user'));
       }
                  return (
                  
-                     <li class="OtherUser">
-                  <div class="userImgAndChat">
-                      <div class="userImg">
-                          <img src="https://uifaces.co/our-content/donated/gPZwCbdS.jpg" class="img-responsive" alt="-" />
+                     <li className="OtherUser">
+                  <div className="userImgAndChat">
+                      <div className="userImg">
+                          <img src="assets/images/avatar.jpg" className="img-responsive" alt="" />
                       </div>
                   
-                      <div class="userChat">
+                      <div className="userChat">
                       <p>{item.repmsg} 
-                   {(item.repfile !== "") ? <img src={ serverURL + "/uploads/" + item.repfile} /> : false }
+                   {(item.repfile !== "") ? <img src={ serverURL + "/uploads/" + item.repfile} alt=""/> : false }
                    </p>
                       </div>
                
                       
-                      <div class="dateTime">{timeTo12HrFormat(time)}</div>
+                      <div className="dateTime">{timeTo12HrFormat(time)}</div>
                       
                   </div>
        
@@ -131,8 +141,9 @@ var obj = JSON.parse(localStorage.getItem('user'));
                  )}
                       
                  else if (item.repmsgFrom === obj.data.agent_id  ) {
+                  if(item.repmsgTo === customer_ID.id){
                   today = new Date(item.repcreatedOn);
-                  // time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
+                 
                   time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
                   function timeTo12HrFormat(time)
         {   // Take a time in 24 hour format and format it in 12 hour format
@@ -155,17 +166,17 @@ var obj = JSON.parse(localStorage.getItem('user'));
         }
                  return (
                   <li>
-                  <div class="userImgAndChat">
-                      <div class="userImg">
-                          <img src="https://uifaces.co/our-content/donated/gPZwCbdS.jpg" class="img-responsive" alt="-" />
+                  <div className="userImgAndChat">
+                      <div className="userImg">
+                          <img src="assets/images/agentavatar.jpg" className="img-responsive" alt="" />
                       </div>
                
-                      <div class="userChat">
+                      <div className="userChat">
                           <p>{item.repmsg} </p>
-                          {(item.repfile !== "") ? <img src={ serverURL + "/uploads/" + item.repfile} /> : false }
+                          {(item.repfile !== "") ? <img src={ serverURL + "/uploads/" + item.repfile} alt="" /> : false }
                       </div>
                       
-                      <div class="dateTime">{timeTo12HrFormat(time)}</div>
+                      <div className="dateTime">{timeTo12HrFormat(time)}</div>
                       
                   </div>
                  
@@ -173,20 +184,10 @@ var obj = JSON.parse(localStorage.getItem('user'));
                 
                  )
                 }
-             
+              }
               }
               
              
-              //  else if(item.repmsg === "") {
-              //      return (
-                   
-              //        <li class="sent"  >
-              //        <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-              //                  <span class="timeStamp">10:08</span>
-              //        <p> no messages</p>
-              //      </li>
-              //    )
-              //    }
              )()}
          
            </>
@@ -194,9 +195,6 @@ var obj = JSON.parse(localStorage.getItem('user'));
 
 
  )):<li style={centredata}><b>NO DATA FOUND</b> </li>}
-
-    
- 
 
  </ul>
 </div>

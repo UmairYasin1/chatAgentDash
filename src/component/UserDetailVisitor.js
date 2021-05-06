@@ -1,95 +1,275 @@
-import React from 'react';
-import { handleRef } from '@fluentui/react-component-ref';
+import React,{useContext,useState,useEffect} from 'react';
+import { MessageContext } from '../context/MessageContext';
+import { SocketContext } from '../context/SocketProvider';
 
-const UserDetailVisitor = ({visits,customer_ID,handle}) => {
-    const onClic = () => {
-        handle()
-     
+import axios from 'axios';
+const UserDetailVisitor = ({visits,customer_ID}) => {
+
+    const [messages] = useContext(MessageContext);
+    const serverURL = "http://10.1.30.146:5002";
+    const [socket] = useContext(SocketContext);
+    const [datapackage,setPackage] = useState({price: 0});
+    const [userUpdation , setUserUpdation] = useState({userName : "",userEmail :"",userPhone :""})
+    const [itemsToShow,setItemToShow] = useState({item : 3,expanded :false})
+    const [pakageID,setPackageID] = useState("")
+    const [list,setList] =useState([])
+    const [editInfo,setEditInfo]=useState(false);
+// console.log("list",pakageID)
+const toggle = ()=>{setEditInfo(!editInfo)}
+   useEffect(()=>{
+        axios
+        .get('http://10.1.30.146:5002/package/allpackages')
+        .then((res)=>{
       
-    }
+    //    console.log(res);
+       var status = res.data.success
+    //   // var token = res.data.accessToken;
+      
+     var pack = { 'success':status,data:res.data.packageList };
+      setList(pack.data )
+      
+      })
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+       },[])
+   
+       const handleSelect = (event) => {
+        setPackageID(event.target.value);
+      };
+      
+//  console.log(userUpdation,'userUpdation')
+ 
+const onUpdation = (e) =>{
+    var currentUserData = visits.filter( x => x.visitor_id === customer_ID.id)
+    var hash = currentUserData[0].visitor_uniqueNum
+    var username = userUpdation.userName
+    var email = userUpdation.userEmail
+    var phone_number = userUpdation.userPhone
+    
 
+    e.preventDefault();
+
+    axios
+        .post('http://10.1.30.146:5002/newvisitor/api/v1/updatevisitorinfo',
+        {
+            hash,
+            username,
+            email,
+            phone_number
+        }
+        ).then((res)=>{
+            // console.log(res,"updated")
+            socket.emit('set-user-data',currentUserData[0].visitor_id);
+            setUserUpdation({userName : "",userEmail :"",userPhone :""})
+        })
+    
+
+}
+
+
+const userDetailChanger = (e)=>{
+setUserUpdation({...userUpdation,
+    [e.target.name] :e.target.value
+})
+}
+
+
+    const ChangeInput = (e) => {
+	  	  setPackage({...datapackage,
+	  	     [e.target.name]: e.target.value
+	  	  })
+	  	  
+	   }
+    
+    const showMore = () => {
+        itemsToShow.item === 3 ? (
+            setItemToShow( {item: messages.filter(item => item.repfile !== "").length ,expanded: true} )
+        ) : (
+            setItemToShow({ item : 3, expanded: false })
+        )
+      }
+      var obj = JSON.parse(localStorage.getItem('user'));
+      const sendPaymentForm = () => {
+        socket.emit('chat-msg',{msg:"To Pay $"+datapackage.price+" for your order click on the Payment Icon to Pay instantly",msgFrom: obj.data.agent_id ,msgTo:customer_ID.id,date:Date.now(),type:"agent",file:"", repMsgId:'', isPaymentForm:true });
+        
+        socket.emit('show-payment-form-btn', {visitor_Id:customer_ID.id,agent_Id: obj.data.agent_id ,amount:datapackage.price });
+      }
     return(
 
-        <div class="mainUserDetailArea">
+        <div className="mainUserDetailArea">
                     
-        <div class="chatDetailHeading">
+        <div className="chatDetailHeading">
             <h3>General Information</h3>
         </div>
   
-        {visits.filter(item => item.visitor_id === customer_ID.id).map(item => ( 
-        <div class="sideBarHeightScoller">
+        {visits.filter(item => item.visitor_id === customer_ID.id).map((item) => { 
+var str = item.visitor_email;
+var walkinCustomer = str.includes(item.visitor_id);
+            return(
+        <div className="sideBarHeightScoller">
          
-            <div class="currentUserInfo">
-                 <div class="media">
-                      <div class="media-left">
-                       <span class="onlineStatus online"></span>
-                        <span class="chatUserImg">
-                            <img src="assets/images/user.jpg" class="media-object"/>
+            <div className="currentUserInfo ">
+                 <div className="media">
+                      <div className="media-left">
+                       <span className="onlineStatus online"></span>
+                        <span className="chatUserImg">
+                            <img src="assets/images/avatar.jpg" className="media-object" alt="pic here "/>
                         </span>
                       </div>
-                      <div class="media-body">
-                        <h4 class="media-heading">{item.visitor_name}</h4>
-                        <p class="msg">Marketing Manager</p>
+                      <div className="media-body">
+                        <h3 className="media-heading">{item.visitor_name}</h3>
+                        {/* <form className="media-update">
+                            <input type="text"  placeholder="insert visitor name " name="name"/>
+                            <input type="email"  placeholder="insert visitor email " name="email"/>
+                            <button type="submit">udpate</button>
+                        </form> */}
+                        {/* <p className="msg">Client</p> */}
                       </div>
                     </div>
         
             </div>
-       
+            <div className="instantPayment update" >
+                
+                <h4>Edit Client Info</h4>
+                <button  className="btn btn-submit" onClick={toggle}>{editInfo?"hide":"Show"}</button>
+                
+           
 
-            <div class="userContactInfo">
+           {editInfo? <div className="paymentForm">
+                    {/* <div className="form-group">
+                        <label>Package Name</label>
+                        <input type="text" className="form-control" placeholder="Package Name" />
+                    </div> */}
+                
+                   
+                    <div className="form-group">
+                      
+                        <input type="text" className="form-control" placeholder="Name " name="userName" value={userUpdation.userName} onChange={userDetailChanger}  />
+                    </div>
+                    <div className="form-group">
+                     
+                        <input type="text" className="form-control" placeholder="Email " name="userEmail" value={userUpdation.userEmail} onChange={userDetailChanger}/>
+                    </div>
+                    <div className="form-group">
+                      
+                        <input type="number" className="form-control" placeholder="PhoneNumber " name="userPhone"  value={userUpdation.userPhone} onChange={userDetailChanger} />
+                    </div>
+           
+                    {/* <div className="form-group">
+                        <label>Description</label>
+                        <textarea className="form-control" placeholder="Description">
+                        </textarea>
+                    </div> */}
+          
+                    <div className="form-group">
+                        <input type="submit" value="UPDATE" className="btn btn-submit" onClick={onUpdation}/>
+                    </div>
+     
+                </div>:false}
+</div>
+            <div className="userContactInfo">
                 <h4>Contact Info</h4>
-                <a href="javascript:;"><span class="fa fa-phone"></span> +1-541-751-2483</a> | <a href="javascript:;"><span class="fa fa-map-marker"></span> {item.country}</a> | <br/>
-                <a href="javascript:;"><span class="fa fa-envelope-o"></span> daria@gmail.com</a> 
+                <ul className="UserStatsInfoLi">
+                    <li><a href={() => false}><span className="fa fa-phone"></span> {item.phone_number}</a> </li>
+                    <li><a href={() => false}><span className="fa fa-map-marker"></span> {item.country}</a></li>
+                {(walkinCustomer) ? false :    <li><a href={() => false}>  <span className="fa fa-envelope-o"> { item.visitor_email}</span></a></li> }
+                    <li><a href={() => false}><span ></span><strong>Browser:</strong> {item.browser}</a></li>
+                    <li><a href={() => false}><span ></span><strong>Platform:</strong> {item.platform}</a></li>
+                    {/* <li><a href={() => false}><span></span><strong>Actual Country:</strong> {item.timezone_location} </a></li> */}
+                    <li><a href={() => false}><span ></span><strong>OS:</strong> {item.os}</a></li>
+                    <li><a href={() => false}><span ></span><strong>Location:</strong> {item.timezone_location}</a></li>
+                </ul>
+          
+                
 
             </div>
     
+            <div className="visitorPathSection PopupAgent">
+                        <h3 className="styledHeading2">Visitor Path</h3>
+                        
+                       <ul className="listItemsInfo">
+            <li> 
+                <span className="infoText">Sample Page | Preview your c..</span>
+                <span className="infoDetail">
+                    <a href={() => false}>{item.web_path}</a></span>
+            </li>
+             {/* <li> 
+                <span className="infoText">Sample Page | Preview your c..</span>
+                <span className="infoDetail">
+                    <a href="javascript:;">https://uptownlogodesign.com</a></span>
+            </li>
+             <li> 
+                <span className="infoText">Sample Page | Preview your c..</span>
+                <span className="infoDetail">
+                    <a href="javascript:;">https://uptownlogodesign.com</a></span>
+            </li> */}
+        </ul>
+                    </div>
 
-
-            <div class="userAttachedFiles">
-                <h3>Attachments (7) <a href="javascript:;" class="pull-right">View All</a></h3>
-
+            <div className="userAttachedFiles">
+                <h3>Total Attachments ({ messages.filter(item => item.repfile !== "" && (item.repmsgFrom === customer_ID.id  || item.repmsgTo === customer_ID.id) ).length }) <a href={() => false} className="pull-right" onClick={showMore} >
+                    
+             { (messages.filter(item => item.repfile !== ""&&  (item.repmsgFrom === customer_ID.id  || item.repmsgTo === customer_ID.id) ).length > 3)  ? itemsToShow.expanded ? (
+   <p>View less</p>
+  ) : (
+    <p> View more</p>
+  ):false}
+           
+                    </a></h3>
 
                 <ul>
-                    <li><img src="assets/images/laptop.jpg" alt="-" class="img-responsive" />
-                    </li>
-                    <li><img src="assets/images/laptop.jpg" alt="-" class="img-responsive" />
-                    </li>
-                    <li><img src="assets/images/laptop.jpg" alt="-" class="img-responsive" />
-                    </li>
-                    <li><img src="assets/images/laptop.jpg" alt="-" class="img-responsive" />
-                    </li>
+                {messages.filter(item => item.repfile !== "" && (item.repmsgFrom === customer_ID.id  || item.repmsgTo === customer_ID.id) ).sort((a,b) => new Date(b.repcreatedOn) < new Date(a.repcreatedOn) ? -1 : -1).slice(0,itemsToShow.item).map(item => (
+                    <>
+                    
+                      {
+                          
+                      
+                          <li><a href={serverURL + "/uploads/" + item.repfile} target = "_blank" rel="noreferrer" ><img src={ serverURL + "/uploads/" + item.repfile} alt="pic here" className="img-responsive" /></a></li> 
+                        }
+                
+                    </>
+                ))}
                 </ul>
 
             </div>
         
 
             {(item.payment_link === "" || item.payment_link === null ) ? 
-            <div class="instantPayment">
+            <div className="instantPayment">
                 <h3>Instant Payment</h3>
 
-                <div class="paymentForm">
-                    <div class="form-group">
+                <div className="paymentForm">
+                    {/* <div className="form-group">
                         <label>Package Name</label>
-                        <input type="text" class="form-control" placeholder="Package Name" />
-                    </div>
+                        <input type="text" className="form-control" placeholder="Package Name" />
+                    </div> */}
                 
-                    <div class="form-group">
+                    <div className="form-group">
                         <label>Package Name</label>
-                        <input type="text" class="form-control" placeholder="Package Name" />
+                        <select value={pakageID} onChange={handleSelect} class="form-control">
+    
+                        {list.map((item =>
+                              
+                              <option key={item.package_id} value={item.package_id}>{item.package_name}</option>
+                              
+                              
+                              
+                                                             ))}
+ 
+</select>
                     </div>
-                    <div class="form-group">
+                    <div className="form-group">
                         <label>Price</label>
-                        <input type="text" class="form-control" placeholder="Price" />
+                        <input type="number" className="form-control" placeholder="Price" name="price" value={datapackage.price} onChange={ChangeInput}  />
                     </div>
            
-                    <div class="form-group">
+                    {/* <div className="form-group">
                         <label>Description</label>
-                        <textarea class="form-control" placeholder="Description">
+                        <textarea className="form-control" placeholder="Description">
                         </textarea>
-                    </div>
+                    </div> */}
           
-                    <div class="form-group">
-                        <input type="submit" value="Generate Link" class="btn btn-submit" />
+                    <div className="form-group">
+                        <input type="submit" value="Generate Link" className="btn btn-submit" onClick={sendPaymentForm}/>
                     </div>
      
                 </div>
@@ -105,142 +285,9 @@ const UserDetailVisitor = ({visits,customer_ID,handle}) => {
      
         </div>
   
-  ))}
+  )})}
       
  </div>
 
     )}
 export default UserDetailVisitor;
-
-{/* <div className="UserDetailsPanel">
-    <div className="user-details">
-        <h3>User Details</h3>
-           
-    
-        <a href={() => false} className="btnAction closeWin" onClick={onClic}><i className="fas fa-times"></i></a>
-        <a href={() => false} className="btnAction fullshowbtn" onClick={onClic}><i className="fas fa-window-minimize"></i></a>
-         {/* <a href="javascipt:;" className="btnAction closeSideChat"><i className="fa fa-arrow-right" onClick={slide}></i></a> 
-    </div>
-   
-    {console.log("visit",visits)}
-    {visits.filter(item => item.visitor_id === customer_ID.id).map(item => ( 
-    <div className="UserRightSection">
-    
-   
-  
-   <div className="generalInfo">
-   
-    <h3>General Information</h3>
-    <ul>
-    <li className="contact">
-      <div className="wrap">
-        <div className="img"> {item.visitor_name.split(' ').map(x => x.charAt(0)).join('').substr(0, 2).toUpperCase()}  </div>
-        <div className="meta">
-    <p className="name">{item.visitor_name}</p>
-          <p className="preview">You just got LITT up, Mike.</p>
-        </div>
-      </div>
-    </li>
-        
-    </ul>
-       
-    <div className="timeAndLocation">
-       
-    <p><span className="far fa-clock"></span> {item.createdate}</p>
-       <p><span className="far fa-thumbtack"></span>{item.country}</p>
-    </div>
-    
-    {/* <Map /> 
-</div>
-  
-    <div className="generalBox">
-        <h3>Visitor Path</h3>
-        
-        <ul className="listItemsInfo">
-            <li> 
-                <span className="infoText">Sample Page | Preview your c..</span>
-                <span className="infoDetail">
-                    <a href={() => false}>https://uptownlogodesign.com</a></span>
-            </li>
-             <li> 
-                <span className="infoText">Sample Page | Preview your c..</span>
-                <span className="infoDetail">
-                    <a href={() => false}>https://uptownlogodesign.com</a></span>
-            </li>
-             <li> 
-                <span className="infoText">Sample Page | Preview your c..</span>
-                <span className="infoDetail">
-                    <a href={() => false}>https://uptownlogodesign.com</a></span>
-            </li>
-        </ul>
-        
-    </div>
-    
-     <div className="generalBox blue">
-     {(item.payment_link === "" || item.payment_link === null ) ? 
-     
-       <div className="instantLinks">
-                                <h5>Instant Links</h5>
-                                <div className="dropdown">
-                                    <div className="dropdownBtn dropdown-toggle" type="button" data-toggle="dropdown">Package Name
-                                        <span> <img src="assets/images/caret.png" alt="" /></span></div>
-                                    <ul className="dropdown-menu">
-                                        <li><a href={() => false}>Package 1</a></li>
-                                        <li><a href={() => false}>Package 2</a></li>
-                                        <li><a href={() => false}>Package 3</a></li>
-                                    </ul>
-                                </div>
-                                <div className="dropdown">
-                                    <div className="dropdownBtn dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Price - $500 -
-                                        <span> <img src="assets/images/caret.png" alt="" /></span></div>
-                                    <ul className="dropdown-menu">
-                                        <li><a href={() => false}>1</a></li>
-                                        <li><a href={() => false}>2</a></li>
-                                        <li><a href={() => false}>3</a></li>
-                                    </ul>
-                                </div> 
-                                <input type="text" placeholder="Price" class="form-control" value=""></input>
-                                <textarea placeholder="Description"></textarea>
-                                <a href={() => false} className="generateLink text-center">Generate Link</a>
-                            </div>:
-                            
-                             <a href={() => false} className="generateLink text-center"  onClick={()=> window.open(item.payment_link, "_blank")}>Project Link</a> }
-                          
-    </div> 
-
-        <div className="generalBox">
-        <h3>Technology</h3>
-           
-        <ul className="listItemsInfo">
-            <li> 
-                <span className="infoText">ip address:</span>
-                <span className="infoDetail">
-    <a href={() => false}>{item.ipaddress}</a></span>
-            </li>
-             <li> 
-                <span className="infoText">Os device:</span>
-                <span className="infoDetail">
-    <a href={() => false}>{item.os}</a></span>
-            </li>
-             <li> 
-                <span className="infoText">Browser:</span>
-                <span className="infoDetail">
-                    <a href={() => false}>{item.browser}</a></span>
-            </li>
-            <li> 
-                <span className="infoText">User agent:</span>
-                <span className="infoDetail">
-                    <a href={() => false}>User agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36</a></span>
-            </li>
-        </ul>
-           
-    </div>
-      
-    <br/><br/><br/><br/><br/><br/><br/>
-    
- </div>    
-     ))}
-    
-    
-    
-</div>*/}

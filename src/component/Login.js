@@ -2,32 +2,44 @@ import React,{useState,useEffect} from 'react';
 import { Redirect } from 'react-router-dom';
 import axios from 'axios';
 import getStorage from './getStorage';
-
+import ReactDOM from "react-dom"
 // import {Redirect} from 'react-router-dom';
 
-const Login = ({hit,setHit}) => {
+const Login = () => {
 	
 	const[logInData,setVal]=useState({username:'',pass:''})
 	const[ini, setini] = useState(false)
-	
+	const [bgpic,setBgpic] =useState('')
+
+	useEffect(()=>{
+		let elem = document.querySelector('body');
+		ReactDOM.findDOMNode(elem).classList.add( 'bgPic');
+		setBgpic('bgPic')
+		return ()=>{
+			let elem = document.querySelector('body');
+			ReactDOM.findDOMNode(elem).classList.remove( 'bgPic');
+			setBgpic('')
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		},[])
+
 	const onInputChange = (e) => {
 		setVal({...logInData,
 		   [e.target.name]: e.target.value
 		})
 		
 	 }
-	// console.log('loginDATA',logInData)
+
 
 	const onSubmit = (e) => {
 		var email = logInData.username;
 		var password= logInData.pass;
-	// console.log('EMAIL',email);
-	// console.log('PASSs',password);
+
           e.preventDefault();
-		// setVal(!val.loggedIn);
+	
 		
 		axios
-		   .post('http://10.1.30.146:5001/agent/api/v1/login',
+		   .post('http://10.1.30.146:5002/agent/api/v1/login',
 		   {
 			email,
 			password
@@ -35,7 +47,7 @@ const Login = ({hit,setHit}) => {
 		  )
 		   .then((res)=>{
 		
-			//console.log(res);
+		//  console.log("response",res);
 		var status = res.data.success
 		var token = res.data.accessToken;
 		
@@ -45,6 +57,9 @@ const Login = ({hit,setHit}) => {
                  
 		   setini(true);
 		
+	   }).catch((err)=>{
+		  let errorThr = document.querySelector(".error")
+		  errorThr.innerHTML = "Email/Password Incorrect"
 	   })
 	}
 	
@@ -57,16 +72,16 @@ const Login = ({hit,setHit}) => {
        
 	   <div className="col-lg-7 col-sm-12 right">
 		  
-		  <a href={() => false} class="logoMain"><img src="assets/images/dino-chat-logo.png" /></a>
+		  <a href={() => false} className="logoMain"><img src="assets/images/dino-chat-logo.png" alt="" /></a>
 		  
-		  <a href={() => false} className="signUpBtn">Signup</a>
+		  {/* <a href={() => false} className="signUpBtn">Signup</a> */}
 		
 	  <div className="loginBox">
 	  
 	  
 	  
 		  <h5>Log In to Your Dinochat Account!</h5>
-		  <p>New to Our Product? <a href={() => false}>Create an Account</a></p>
+		  {/* <p>New to Our Product? <a href={() => false}>Create an Account</a></p> */}
 		  
 	  
 	  
@@ -75,7 +90,7 @@ const Login = ({hit,setHit}) => {
 					   <div className="col-md-12">
 						   <div className="form-group">
 							  <label>Email</label>
-							   {/* <input type="text" name="email" className="form-control" value="" placeholder="Email " required/> */}
+							 
 							   <input  className="form-control" type="text" name="username" placeholder="Username" value={logInData.username} onChange={onInputChange}/>
 
 						   </div>
@@ -83,7 +98,7 @@ const Login = ({hit,setHit}) => {
 							<div className="form-group">
 							   <label>Password</label>
 
-							   {/* <input type="text" name="password" className="form-control" value="" placeholder="Password" required/> */}
+							
 							   <input className="form-control" type="password" name="pass" placeholder="Password" value={logInData.pass} onChange={onInputChange}/>
 						   </div>
 						   
@@ -91,7 +106,7 @@ const Login = ({hit,setHit}) => {
 						   
 						   <div className="col-md-6">
 							  <div className="form-group">
-							   <label className="" className="lableclassName"><input type="checkbox" /> Keep me logged in</label>
+							   <label  className="lableclassName"><input type="checkbox" /> Keep me logged in</label>
 							   </div>
 						   </div>
 						   
@@ -104,12 +119,12 @@ const Login = ({hit,setHit}) => {
 						   <div className="form-group">
 							   <button type="submit" name="save" className="btn btn-success btn-lg btn-submit">Log in</button>
 						   </div>
-						   
+						   <div className="error"></div>
 						   
 						   
 						   
 						   <div className="form-group">
-							   <p className="style"> <a href={() => false}>Forget Password</a></p>
+							   {/* <p className="style"> <a href={() => false}>Forget Password</a></p> */}
 						   </div>
 				
 						   
@@ -136,7 +151,7 @@ const Login = ({hit,setHit}) => {
    
 	)
 	else
-		 return <Redirect to="/visitors" />
+		 return <Redirect to="/dashboard" />
 	}
 	
 

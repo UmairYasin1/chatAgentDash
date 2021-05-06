@@ -4,7 +4,7 @@ export const UserContext = createContext();
 
 export const UserProvider = (props) =>{
   
-    const [userlog, setUserLog] = useState([])
+    const [userlog, setUserLog] = useState(true)
    
     return(
         <UserContext.Provider value={[userlog,setUserLog]}>
