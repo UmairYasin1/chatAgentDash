@@ -1,36 +1,39 @@
-import React from 'react';
+import { slice } from 'lodash';
+import React,{memo} from 'react';
 
 const Title = ({visits,customer_ID}) => {
-
-// console.log('title' ,visitors,customer_ID)
+console.log("title")
 
   return(
-    <>
-    {visits.filter(item => item.visitor_id === customer_ID.id).map(item => (
-    <div class="media">
-    <div class="media-left">
-     <span class="onlineStatus online"></span>
-      <span class="chatUserImg">
-          <img src="assets/images/user.jpg" class="media-object"/>
+    
+    
+    <div className="media">
+    <div className="media-left">
+     <span className="onlineStatus online"></span>
+      <span className="chatUserImg">
+          <img src="assets/images/avatar.jpg" className="media-object" alt="pic here "/>
       </span>
     </div>
-    <div class="media-body">
-      <h4 class="media-heading">{item.visitor_name}</h4>
-      <p class="msg">{item.totaltimeshort} (online)</p>
+    <div className="media-body">
+     
+    {visits.filter(item => item.visitor_id === customer_ID.id).map((item) =>{ 
+    const id = item.visitor_name
+    let lastSix;
+    (id.slice(0,2)==="WC")? lastSix = id.slice(id.length - 8) : lastSix = item.visitor_name
+      
+      
+     return (
+      <>
+      <h4 className="media-heading">{lastSix }</h4>
+      <p className="msg">{item.totaltimeshort} (online)</p>
+      </>
+      )})}
+   
     </div>
   </div>
-      ))} 
-      </>
-//     <div class="contact-profile">
-//          {visits.filter(item => item.visitor_id === customer_ID.id).map(item => (
-//   <>
-//       <h3>{item.visitor_name}</h3>
-//       <h4><span class="OnlineStatus"></span> {item.totaltimeshort} (online)</h4>
-//      </>
-//     ))} 
-
-// </div>
+       
+      
         )
 }
 
-export default Title;
+export default memo(Title);

@@ -1,17 +1,18 @@
-import React, { useEffect } from 'react';
+import React, { useEffect ,memo} from 'react';
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
-
+import {isEqual} from "lodash";
 am4core.useTheme(am4themes_animated);
 
 const Graph = () =>  {
 
 useEffect(() => {
+  
 	function am4themes_mossawirTheme(target) {
         if (target instanceof am4core.ColorSet) {
           target.list = [
-            am4core.color("#0f47eb"),
+            am4core.color("green"),
             am4core.color("#3f5efb"),
             am4core.color("#0f47eb"),
             am4core.color("#2275f5"),
@@ -22,37 +23,37 @@ useEffect(() => {
       }
       am4core.useTheme(am4themes_mossawirTheme);
 
-	var chart = am4core.create("chartdiv3", am4charts.XYChart);
+	var chart = am4core.create("Graphcontainer", am4charts.XYChart);
 
 	chart.scrollbarX = new am4core.Scrollbar();
 
 // Add data
 chart.data = [{
-  "country": "USA",
-  "visits": 3025
+  "month": "January",
+  "visits": 4000
 }, {
-  "country": "China",
+  "month": "Febuary",
   "visits": 1882
 }, {
-  "country": "Japan",
+  "month": "March",
   "visits": 1809
 }, {
-  "country": "Germany",
+  "month": "April",
   "visits": 1322
 }, {
-  "country": "UK",
+  "month": "May",
   "visits": 1122
 }, {
-  "country": "France",
+  "month": "June",
   "visits": 1114
 }, {
-  "country": "India",
+  "month": "July",
   "visits": 984
 }, {
-  "country": "Spain",
+  "month": "August",
   "visits": 711
 }, {
-  "country": "Netherlands",
+  "month": "September",
   "visits": 665
 }];
 
@@ -67,8 +68,8 @@ function prepareParetoData(){
     }
 
     var sum = 0;
-    for( i = 0; i < chart.data.length; i++){
-        value = chart.data[i].visits;
+    for(  i = 0; i < chart.data.length; i++){
+         value = chart.data[i].visits;
         sum += value;   
         chart.data[i].pareto = sum / total * 100;
     }    
@@ -76,7 +77,7 @@ function prepareParetoData(){
 
 // Create axes
 var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
-categoryAxis.dataFields.category = "country";
+categoryAxis.dataFields.category = "month";
 categoryAxis.renderer.grid.template.location = 0;
 categoryAxis.renderer.minGridDistance = 60;
 categoryAxis.tooltip.disabled = true;
@@ -87,28 +88,28 @@ valueAxis.min = 0;
 valueAxis.cursorTooltipEnabled = false;
 
 // Create series
-var series = chart.series.push(new am4charts.ColumnSeries());
-series.sequencedInterpolation = true;
-series.dataFields.valueY = "visits";
-series.dataFields.categoryX = "country";
-series.tooltipText = "[{categoryX}: bold]{valueY}[/]";
-series.columns.template.strokeWidth = 0;
+// var series = chart.series.push(new am4charts.ColumnSeries());
+// series.sequencedInterpolation = true;
+// series.dataFields.valueY = "visits";
+// series.dataFields.categoryX = "country";
+// series.tooltipText = "[{categoryX}: bold]{valueY}[/]";
+// series.columns.template.strokeWidth = 0;
 
-series.tooltip.pointerOrientation = "vertical";
+// series.tooltip.pointerOrientation = "vertical";
 
-series.columns.template.column.cornerRadiusTopLeft = 10;
-series.columns.template.column.cornerRadiusTopRight = 10;
-series.columns.template.column.fillOpacity = 0.8;
+// series.columns.template.column.cornerRadiusTopLeft = 10;
+// series.columns.template.column.cornerRadiusTopRight = 10;
+// series.columns.template.column.fillOpacity = 0.8;
 
-// on hover, make corner radiuses bigger
-var hoverState = series.columns.template.column.states.create("hover");
-hoverState.properties.cornerRadiusTopLeft = 0;
-hoverState.properties.cornerRadiusTopRight = 0;
-hoverState.properties.fillOpacity = 1;
+// // on hover, make corner radiuses bigger
+// var hoverState = series.columns.template.column.states.create("hover");
+// hoverState.properties.cornerRadiusTopLeft = 0;
+// hoverState.properties.cornerRadiusTopRight = 0;
+// hoverState.properties.fillOpacity = 1;
 
-series.columns.template.adapter.add("fill", function(fill, target) {
-  return chart.colors.getIndex(target.dataItem.index);
-})
+// series.columns.template.adapter.add("fill", function(fill, target) {
+//   return chart.colors.getIndex(target.dataItem.index);
+// })
 
 
 var paretoValueAxis = chart.yAxes.push(new am4charts.ValueAxis());
@@ -123,7 +124,7 @@ paretoValueAxis.cursorTooltipEnabled = false;
 
 var paretoSeries = chart.series.push(new am4charts.LineSeries())
 paretoSeries.dataFields.valueY = "pareto";
-paretoSeries.dataFields.categoryX = "country";
+paretoSeries.dataFields.categoryX = "month";
 paretoSeries.yAxis = paretoValueAxis;
 paretoSeries.tooltipText = "pareto: {valueY.formatNumber('#.0')}%[/]";
 paretoSeries.bullets.push(new am4charts.CircleBullet());
@@ -150,20 +151,15 @@ return () => {
   
     return (
       
-	<div>
-		<div className="col-md-12">
-			<div className="genericDashboardBox2">
-				  <h3 className="dashHeading4"><span className="count">82K</span> Total Chats</h3>
-				<div className="chartWrap">
-				 <div id="chartdiv3" style={{ width: "100%", height: "500px" }}></div>
-				</div>
-			</div>
-		</div>
-	</div>
+      <div className="chart">
+      <div className="graphPlot">
+        <div className="Graphcontainer" id="Graphcontainer"></div>
+      </div>
+  </div>
  
     );
   }
 
 
-export default Graph;
+export default memo(Graph);
 

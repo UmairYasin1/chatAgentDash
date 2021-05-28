@@ -1,1 +1,1 @@
-export default () =>(localStorage.getItem('user') || null );
+export default () => (localStorage.getItem('user') || null );

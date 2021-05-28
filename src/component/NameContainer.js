@@ -1,44 +1,63 @@
-import React from 'react';
+import React,{useState} from 'react';
+import ReactPaginate from "react-paginate";
 
-const NameContainer = ({names,history,chnageActiveUser,isActive}) => {
+const NameContainer = ({names,chnageActiveUser,isActive,customer_ID}) => {
+const [pageNumber , setPageNumber] = useState(0)
 
-   console.log('name',names)
-  return(
-       <tbody>
-    {names.sort((a,b) => new Date(a.createdOn) < new Date(b.createdOn) ? 1 : -1).map(( item => 
 
-<tr className={isActive ? 'active': null}>
-<td><input type="checkbox" /></td>
-<td onClick={()=>chnageActiveUser(item.visitor_id)}><a href={() => false} class="showUserDetailsSideBar">
-<span class="userAgent"><img src="assets/images/userImg.jpg" alt="-" class="img-responsive" /></span>
-<span class="displayinblock" >{item.visitor_name}</span></a></td>
+const UserPerPage = 9
+const pagesVisited = pageNumber * UserPerPage
 
+
+const displayUser = names.slice(0,names.length).sort((a,b) => new Date(a.createdOn) < new Date(b.createdOn) ? 1 : -1).slice(pagesVisited,pagesVisited + UserPerPage).map((item)=>{
+    const id = item.visitor_name
+    let lastSix;
+    (id.slice(0,2)==="WC")? lastSix = id.slice(id.length - 8) : lastSix = item.visitor_name
+   return(
+       
+<tr className={item.visitor_id === customer_ID.id ? 'active': null}  key={item.visitor_id}>
+{/* <td><input type="checkbox" /></td> */}
+<td onClick={()=>chnageActiveUser(item.visitor_id,item.agent_name)}><a href={() => false} className="showUserDetailsSideBar">
+<span className="userAgent"><img src="assets/images/avatar.jpg" alt="-" className="img-responsive" /></span>
+<span className="displayinblock" >{lastSix}</span></a></td>
+<td><a href={() => false}><span className={`fflag fflag-${item.country} ff-md`}></span></a><a href={() => false}><span className={`browser ${item.browser}`}></span></a><a href={() => false}><span className={`platform ${item.platform}`}></span></a><a href={() => false}><span className={`operating-system ${item.os}`}></span></a></td>
 <td>{item.agent_name}</td>
 <td>{item.totaltimeshort}</td>
 <td>-</td>
-<td>
-<p class="maxWidth">Hi there! Welcome back! Would you be interest in Mobile application for your business in just $3999?                       </p>
-</td>
-
+{/* <td>
+<p className="maxWidth">Hi there! Welcome back! Would you be interest in Mobile application for your business in just $3999? </p>
+</td> */}
 </tr>
+    )
+})
 
+const pageCount = Math.ceil(names.length / UserPerPage)
+const changePage = ({selected})=>{
+    setPageNumber(selected)
+}
 
-
-
-
-
-
-      //  <tr  className={isActive ? 'active': null} >
-      // <td><input type="checkbox" /></td> 
-      //   {/* <td><a href={() => false} className="selectCheck" onClick={()=>chnageActiveUser(item.visitor_id)}><span className="checkOval"></span></a></td> */}
-      //   <td><a href={() => false} class="userName openChatPopup"></a>{item.visitor_name}</td>
-      //   <td>{item.agent_name}</td>
-      //   <td>{item.totaltimeshort}</td>
-      //   <td>-</td>
-      //   <td>Hi there! Welcome back! Would you be interested in Mobile application for your business in just $3999?</td>
-      // </tr>
-     ))}
-    </tbody>)
+  return(
+      <>
+       <tbody>
+           {displayUser}
+    </tbody>
+    
+   <div className="paginationHistory">
+    <ReactPaginate 
+    previousLable={"Previous"}
+    nextLabel={"Next"}
+    pageCount = {pageCount}
+    onPageChange={changePage}
+    containerclassName={"paginationBttns"}
+    previousLinkclassName={"previousBttn"}
+    nextLinkclassName={"nextBttn"}
+    disabledclassName={"paginationDisabled"}
+    activeclassName={"paginationActive"}
+    disableInitialCallback={true}
+    />
+ </div>
+   </>
+    )
 }
 
 export default NameContainer ;

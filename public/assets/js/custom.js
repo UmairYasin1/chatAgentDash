@@ -76,9 +76,11 @@ $(document).ready(function(){
     
     
     
-   
+   setInterval(function(){
+    if($(".showWidgetList ul li").length >= 9) {
+        $(".showWidgetList ul").addClass("scrollerClass");
+    }
     
-    
-    
+},1000);
     
 });
